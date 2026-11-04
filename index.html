@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Liga SIG · Surgery Interest Group FUSM</title>
+  <meta name="description" content="Ranking en vivo de la liga de puntos del Surgery Interest Group FUSM.">
+  <meta name="theme-color" content="#0a222c">
+  <meta property="og:title" content="Liga SIG 🏆">
+  <meta property="og:description" content="¿Quién va ganando este mes? Mira el ranking en vivo del SIG FUSM.">
+  <link rel="icon" href="assets/isotipo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=1">
+</head>
+<body>
+  <div class="fondo" aria-hidden="true"></div>
+
+  <header class="top">
+    <img src="assets/isotipo-claro.svg" class="logo" alt="SIG FUSM" width="44" height="44">
+    <div class="marca">
+      <p class="kicker">Surgery Interest Group</p>
+      <h1>Liga SIG</h1>
+    </div>
+    <span class="vivo" title="Se actualiza solo"><i></i>En vivo</span>
+  </header>
+
+  <p id="demo" class="aviso-demo" hidden>Modo demostración · datos ficticios</p>
+
+  <main>
+    <section class="hero" aria-labelledby="premio">
+      <div class="premio">
+        <span class="trofeo" aria-hidden="true">🏆</span>
+        <div>
+          <p class="kicker" id="premio-mes">Premio del mes</p>
+          <h2 id="premio">—</h2>
+        </div>
+      </div>
+      <div class="cuenta" id="cuenta" aria-label="Tiempo para el cierre del mes">
+        <div><b data-u="d">0</b><span>días</span></div>
+        <div><b data-u="h">0</b><span>horas</span></div>
+        <div><b data-u="m">0</b><span>min</span></div>
+        <div><b data-u="s">0</b><span>seg</span></div>
+      </div>
+      <p class="mensaje" id="mensaje"></p>
+    </section>
+
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button role="tab" aria-selected="true" data-tab="mes">Este mes</button>
+      <button role="tab" aria-selected="false" data-tab="historico">Campeones</button>
+      <button role="tab" aria-selected="false" data-tab="reglas">Cómo sumar</button>
+    </nav>
+
+    <section id="tab-mes" class="panel">
+      <div class="podio" id="podio"></div>
+      <ol class="tabla" id="tabla"></ol>
+      <div class="sin-puntos" id="sin-puntos"></div>
+      <h3 class="titulo-seccion">Últimos puntos</h3>
+      <ul class="feed" id="feed"></ul>
+    </section>
+
+    <section id="tab-historico" class="panel" hidden>
+      <h3 class="titulo-seccion">Salón de la fama</h3>
+      <div class="campeones" id="campeones"></div>
+      <h3 class="titulo-seccion">Acumulado histórico</h3>
+      <p class="nota">Todos los puntos desde el inicio de la liga. Este historial se tiene en cuenta para futuras selecciones de líderes.</p>
+      <ol class="tabla" id="tabla-historica"></ol>
+    </section>
+
+    <section id="tab-reglas" class="panel" hidden>
+      <h3 class="titulo-seccion">Actividades que suman</h3>
+      <ul class="reglas" id="reglas"></ul>
+      <div class="como">
+        <p><b>¿Cómo funciona?</b> Cada semana hay una actividad en el grupo de WhatsApp del SIG. La junta directiva registra los puntos aquí y el ranking se actualiza en vivo.</p>
+        <p>Quien más puntos sume en el mes se lleva el premio. El conteo vuelve a cero el primer día de cada mes, pero el acumulado queda en el Salón de la fama.</p>
+        <p class="fair">Compite con todo, celebra a los demás. 🤝</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <a href="admin.html">Acceso junta directiva</a>
+  </footer>
+
+  <dialog id="ficha" class="ficha" aria-labelledby="ficha-nombre"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <canvas id="confeti" class="confeti" aria-hidden="true"></canvas>
+
+  <script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>

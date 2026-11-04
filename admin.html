@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Panel junta · Liga SIG</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0a222c">
+  <link rel="icon" href="assets/isotipo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=1">
+</head>
+<body class="admin">
+  <div class="fondo" aria-hidden="true"></div>
+
+  <header class="top">
+    <a href="./"><img src="assets/isotipo-claro.svg" class="logo" alt="Volver a la Liga SIG" width="44" height="44"></a>
+    <div class="marca">
+      <p class="kicker">Junta directiva</p>
+      <h1>Panel</h1>
+    </div>
+    <div class="usuario" id="usuario"></div>
+  </header>
+  <p id="demo" class="aviso-demo" hidden>Modo demostración · los cambios quedan solo en este navegador</p>
+
+  <main>
+    <section id="login" class="tarjeta login" hidden>
+      <h2>Acceso de la junta</h2>
+      <p id="login-msg">Inicia sesión con tu cuenta de Google autorizada para registrar puntos.</p>
+      <button class="btn" id="btn-login">Entrar con Google</button>
+    </section>
+
+    <div id="panel" hidden>
+      <nav class="tabs" role="tablist" aria-label="Secciones del panel">
+        <button role="tab" aria-selected="true" data-tab="dar">Dar</button>
+        <button role="tab" aria-selected="false" data-tab="personas">Personas</button>
+        <button role="tab" aria-selected="false" data-tab="acts">Actividades</button>
+        <button role="tab" aria-selected="false" data-tab="registros">Registros</button>
+      </nav>
+
+      <!-- Dar puntos -->
+      <section id="tab-dar" class="panel tarjeta">
+        <h2>Dar puntos</h2>
+        <span class="etiqueta">1 · Actividad</span>
+        <div class="chips" id="dar-acts"></div>
+        <div class="fila-campos">
+          <div><label class="etiqueta" for="dar-pts">2 · Puntos por persona</label><input class="campo" id="dar-pts" type="number" inputmode="numeric" step="1"></div>
+          <div><label class="etiqueta" for="dar-fecha">Fecha</label><input class="campo" id="dar-fecha" type="date"></div>
+        </div>
+        <label class="etiqueta" for="dar-nota">Nota (opcional, se ve en público)</label>
+        <input class="campo" id="dar-nota" maxlength="80" placeholder="Ej. ¡Respuesta más rápida!">
+        <span class="etiqueta">3 · ¿Quiénes?</span>
+        <input class="campo" id="dar-buscar" placeholder="Buscar participante…" autocomplete="off">
+        <div class="barra-acc">
+          <button class="btn sec mini-btn" id="dar-todos">Marcar visibles</button>
+          <button class="btn sec mini-btn" id="dar-ninguno">Limpiar</button>
+        </div>
+        <div class="chips" id="dar-personas" style="margin-top:12px"></div>
+        <button class="btn ancho" id="dar-ok" disabled>Otorgar puntos</button>
+      </section>
+
+      <!-- Participantes -->
+      <section id="tab-personas" class="panel tarjeta" hidden>
+        <h2>Participantes</h2>
+        <p class="nota">Solo nombre + inicial del apellido (ej. "Laura R."). Sin correos, teléfonos ni documentos: la página es pública.</p>
+        <div class="fila-campos">
+          <input class="campo" id="p-nombre" placeholder="Nombre e inicial" maxlength="30">
+          <input class="campo" id="p-emoji" placeholder="Emoji (opcional)" maxlength="4">
+        </div>
+        <button class="btn" id="p-agregar" style="margin-top:10px">Agregar participante</button>
+        <ul class="lista-admin" id="p-lista"></ul>
+      </section>
+
+      <!-- Actividades -->
+      <section id="tab-acts" class="panel tarjeta" hidden>
+        <h2>Actividades</h2>
+        <p class="nota">Los puntos por defecto se pueden cambiar al otorgarlos.</p>
+        <div class="fila-campos" style="grid-template-columns:2fr 1fr 1fr">
+          <input class="campo" id="a-nombre" placeholder="Nombre de la actividad" maxlength="40">
+          <input class="campo" id="a-emoji" placeholder="Emoji" maxlength="4">
+          <input class="campo" id="a-pts" type="number" placeholder="Pts" step="1">
+        </div>
+        <button class="btn" id="a-agregar" style="margin-top:10px">Agregar actividad</button>
+        <ul class="lista-admin" id="a-lista"></ul>
+
+        <h2 style="margin-top:28px">Premio y mensaje</h2>
+        <label class="etiqueta" for="c-premio">Premio del mes</label>
+        <input class="campo" id="c-premio" maxlength="60">
+        <label class="etiqueta" for="c-mensaje">Mensaje destacado</label>
+        <input class="campo" id="c-mensaje" maxlength="140">
+        <button class="btn" id="c-guardar" style="margin-top:12px">Guardar</button>
+      </section>
+
+      <!-- Registros -->
+      <section id="tab-registros" class="panel tarjeta" hidden>
+        <h2>Últimos registros</h2>
+        <p class="nota">Para corregir: elimina el registro equivocado (o da puntos negativos como ajuste).</p>
+        <ul class="lista-admin" id="r-lista"></ul>
+        <div id="demo-reset" hidden style="margin-top:18px"><button class="btn peligro" id="btn-reset">Reiniciar datos de demostración</button></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="pie"><a href="./">Ver la Liga SIG</a></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <canvas id="confeti" class="confeti" aria-hidden="true"></canvas>
+
+  <script type="module" src="js/admin.js?v=1"></script>
+</body>
+</html>

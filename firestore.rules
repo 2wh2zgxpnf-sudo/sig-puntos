@@ -1,0 +1,63 @@
+rules_version = '2';
+// Reglas de seguridad de la Liga SIG.
+// - Cualquiera puede LEER el ranking (participantes, actividades, puntos, config).
+// - Solo pueden ESCRIBIR las cuentas Google cuyo correo exista como documento en /admins/{correo}.
+// - La colección /admins no es legible públicamente: cada admin solo puede leer su propio documento
+//   (así el panel sabe si tiene permiso) y la lista se administra desde la consola de Firebase.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+    }
+
+    function texto(v, max) { return v is string && v.size() <= max; }
+
+    match /admins/{correo} {
+      allow read: if request.auth != null && request.auth.token.email.lower() == correo;
+      allow write: if false;
+    }
+
+    match /participantes/{id} {
+      allow read: if true;
+      allow create, update: if esAdmin()
+        && texto(request.resource.data.nombre, 30) && request.resource.data.nombre.size() > 0
+        && (!('emoji' in request.resource.data) || texto(request.resource.data.emoji, 8))
+        && (!('activo' in request.resource.data) || request.resource.data.activo is bool);
+      allow delete: if esAdmin();
+    }
+
+    match /actividades/{id} {
+      allow read: if true;
+      allow create, update: if esAdmin()
+        && texto(request.resource.data.nombre, 40) && request.resource.data.nombre.size() > 0
+        && request.resource.data.puntos is int
+        && request.resource.data.puntos >= -100 && request.resource.data.puntos <= 100;
+      allow delete: if esAdmin();
+    }
+
+    match /puntos/{id} {
+      allow read: if true;
+      allow create: if esAdmin()
+        && request.resource.data.participanteId is string
+        && request.resource.data.actividadId is string
+        && request.resource.data.puntos is int
+        && request.resource.data.puntos >= -100 && request.resource.data.puntos <= 100
+        && request.resource.data.puntos != 0
+        && request.resource.data.fecha is int
+        && texto(request.resource.data.get('nota', ''), 80)
+        && texto(request.resource.data.get('otorgadoPor', ''), 40);
+      allow update: if false;          // se corrige borrando y volviendo a registrar
+      allow delete: if esAdmin();
+    }
+
+    match /config/general {
+      allow read: if true;
+      allow write: if esAdmin()
+        && texto(request.resource.data.get('premio', ''), 60)
+        && texto(request.resource.data.get('mensaje', ''), 140);
+    }
+  }
+}
