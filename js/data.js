@@ -7,29 +7,40 @@ const COLS = ["participantes", "actividades", "puntos"];
 
 /* ───────────────────────── Firebase ───────────────────────── */
 const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
-let fb = null; // { db, auth, fs, au }
+let fb = null; // { db, fs }
+let fbAuth = null; // { auth, au } — solo se carga en el panel
 
 async function fbInit() {
   if (fb) return fb;
-  const { initializeApp } = await import(FB + "firebase-app.js");
-  const fs = await import(FB + "firebase-firestore.js");
-  const au = await import(FB + "firebase-auth.js");
-  const app = initializeApp(CONFIG.firebase);
-  fb = { db: fs.getFirestore(app), auth: au.getAuth(app), fs, au };
+  const [{ initializeApp, getApps }, fs] = await Promise.all([
+    import(FB + "firebase-app.js"), import(FB + "firebase-firestore.js"),
+  ]);
+  const app = getApps()[0] || initializeApp(CONFIG.firebase);
+  fb = { app, db: fs.getFirestore(app), fs };
   return fb;
+}
+async function fbAuthInit() {
+  if (fbAuth) return { ...fb, ...fbAuth };
+  const { app } = await fbInit();
+  const au = await import(FB + "firebase-auth.js");
+  fbAuth = { auth: au.getAuth(app), au };
+  return { ...fb, ...fbAuth };
 }
 
 const firebaseApi = {
+  // Emite en cada cambio, aunque no hayan llegado todas las colecciones
+  // (`completo` indica si ya llegaron las cuatro). Así la página nunca se queda en blanco
+  // esperando a una sola consulta lenta.
   async suscribir(cb) {
     const { db, fs } = await fbInit();
     const estado = { participantes: [], actividades: [], puntos: [], config: {} };
     const listos = new Set();
-    const emitir = () => { if (listos.size === 4) cb({ ...estado }); };
+    const emitir = () => cb({ ...estado, completo: listos.size === 4 });
     for (const c of COLS) {
       fs.onSnapshot(fs.collection(db, c), (snap) => {
         estado[c] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         listos.add(c); emitir();
-      }, (e) => console.error(c, e));
+      }, (e) => { console.error(c, e); listos.add(c); emitir(); });
     }
     fs.onSnapshot(fs.doc(db, "config", "general"), (d) => {
       estado.config = d.exists() ? d.data() : {};
@@ -37,7 +48,7 @@ const firebaseApi = {
     }, (e) => { console.error("config", e); listos.add("config"); emitir(); });
   },
   async onAuth(cb) {
-    const { auth, au, db, fs } = await fbInit();
+    const { auth, au, db, fs } = await fbAuthInit();
     au.onAuthStateChanged(auth, async (user) => {
       if (!user) return cb({ user: null, esAdmin: false });
       let esAdmin = false;
@@ -49,7 +60,7 @@ const firebaseApi = {
     });
   },
   async login() {
-    const { auth, au } = await fbInit();
+    const { auth, au } = await fbAuthInit();
     const prov = new au.GoogleAuthProvider();
     prov.setCustomParameters({ prompt: "select_account" });
     try { await au.signInWithPopup(auth, prov); }
@@ -59,7 +70,7 @@ const firebaseApi = {
       else throw e;
     }
   },
-  async logout() { const { auth, au } = await fbInit(); await au.signOut(auth); },
+  async logout() { const { auth, au } = await fbAuthInit(); await au.signOut(auth); },
   async crear(col, data) { const { db, fs } = await fbInit(); await fs.addDoc(fs.collection(db, col), data); },
   async actualizar(col, id, data) { const { db, fs } = await fbInit(); await fs.updateDoc(fs.doc(db, col, id), data); },
   async borrar(col, id) { const { db, fs } = await fbInit(); await fs.deleteDoc(fs.doc(db, col, id)); },
@@ -130,7 +141,7 @@ function escribir(fn) {
 window.addEventListener("storage", (ev) => { if (ev.key === KEY) oyentes.forEach((cb) => cb({ ...leer() })); });
 
 const demoApi = {
-  async suscribir(cb) { oyentes.add(cb); cb({ ...leer() }); },
+  async suscribir(cb) { const f = (e) => cb({ ...e, completo: true }); oyentes.add(f); f(leer()); },
   async onAuth(cb) {
     const on = sessionStorage.getItem("ligasig-demo-admin") === "1";
     demoApi._cb = cb;

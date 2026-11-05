@@ -7,7 +7,7 @@ import { lanzarConfeti } from "./confeti.js";
 const $ = (s) => document.querySelector(s);
 const reducido = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let estado = null;
-let conteoPrevio = null;   // nº de registros de puntos (para detectar llegadas en vivo)
+let conteoPrevio = 0;   // nº de registros de puntos (para detectar llegadas en vivo)
 let liderPrevio = null;
 
 if (MODO === "demo") $("#demo").hidden = false;
@@ -201,12 +201,17 @@ function toast(html) {
 }
 
 /* ── Datos en vivo ── */
+let completoPrevio = false;
+const aviso = setTimeout(() => {
+  if (!completoPrevio) $("#feed").innerHTML = `<li class="vacio">La conexión está tardando más de lo normal. Si no carga, recarga la página.</li>`;
+}, 12000);
 api.suscribir((e) => {
-  const primera = estado === null;
   estado = e;
   render();
+  if (!e.completo) return;               // aún llegan datos: solo pintar, sin celebrar
+  clearTimeout(aviso);
   const lider = S.rankingConTendencia(e).find((f) => f.total > 0 && f.rank === 1)?.p.id || null;
-  if (primera) {
+  if (!completoPrevio) {
     if (lider && !sessionStorage.getItem("ligasig-confeti")) { sessionStorage.setItem("ligasig-confeti", "1"); setTimeout(() => lanzarConfeti(), 500); }
   } else if (e.puntos.length > conteoPrevio) {
     const nuevo = [...e.puntos].sort((a, b) => b.fecha - a.fecha)[0];
@@ -214,6 +219,7 @@ api.suscribir((e) => {
     if (p && nuevo.puntos > 0) toast(`${S.avatar(p, "sm")}<span><b>${S.esc(p.nombre)}</b> +${nuevo.puntos} pts</span>`);
     lanzarConfeti(lider !== liderPrevio ? 1 : 0.4);
   }
+  completoPrevio = true;
   conteoPrevio = e.puntos.length;
   liderPrevio = lider;
 });
