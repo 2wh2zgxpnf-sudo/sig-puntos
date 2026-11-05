@@ -15,7 +15,11 @@ Es HTML/JS estático (GitHub Pages) con Firebase (Firestore + Authentication). N
 Mientras `js/config.js` tenga `firebase: null`, la página usa datos ficticios guardados solo en el navegador.
 El panel deja "entrar" sin cuenta. Sirve para probar el diseño.
 
-## Conectar Firebase (una sola vez)
+## Estado
+Conectada al proyecto Firebase `liga-sig` (2026-11-04). Para agregar un admin: Firestore → colección
+`admins` → *Agregar documento* → ID = correo Google en minúsculas → campo `nombre`.
+
+## Conectar Firebase (referencia, ya hecho)
 1. En https://console.firebase.google.com crea un proyecto (p. ej. `sig-puntos`). Analytics no hace falta.
 2. **Build → Firestore Database → Crear base de datos** (modo producción, región `southamerica-east1` o `us-east1`).
 3. **Build → Authentication → Comenzar → Google** → habilitar.
